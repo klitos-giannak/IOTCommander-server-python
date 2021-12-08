@@ -74,8 +74,10 @@ while 1:
 
         parsedMessage = parse_broadcast_message(decodedMessage)
 
-        if parsedMessage['action'] == "discover":
-            print('action "discover" found. Responding...')
-            outgoingMessage = discoverResponse.encode()
-            broadcastSocket.sendto(outgoingMessage, address)
-            print("Out -> " + ip + ":" + port + " : " + discoverResponse)
+        if parsedMessage is not None:
+            if parsedMessage['action'] == "discover":
+                print('action "discover" found. Responding...')
+                outgoingMessage = discoverResponse.encode()
+                broadcastSocket.sendto(outgoingMessage, address)
+                print("Out -> " + ip + ":" + port + " : " + discoverResponse)
+

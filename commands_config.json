@@ -1,0 +1,11 @@
+{
+  "consolePrint": {
+    "myText": "text"
+  },
+  "testTypes": {
+    "myBoolean": "boolean",
+    "myInteger": "integer",
+    "myFloat": "float",
+    "myText": "text"
+  }
+}

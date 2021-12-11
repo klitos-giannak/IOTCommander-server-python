@@ -1,11 +1,12 @@
 {
   "consolePrint": {
-    "myText": "text"
+    "myText": "text",
+    "shellCommand": "echo $myText"
   },
   "testTypes": {
-    "myBoolean": "boolean",
     "myInteger": "integer",
     "myFloat": "float",
-    "myText": "text"
+    "myText": "text",
+    "shellCommand": "echo $myText, $myFloat, $myInteger"
   }
 }

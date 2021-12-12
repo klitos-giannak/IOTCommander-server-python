@@ -4,7 +4,7 @@
     "shellCommand": "echo $myText"
   },
   "testTypes": {
-    "myInteger": "integer",
+    "myInt": "int",
     "myFloat": "float",
     "myText": "text",
     "shellCommand": "echo $myText, $myFloat, $myInteger"

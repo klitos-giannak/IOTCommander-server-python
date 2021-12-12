@@ -63,7 +63,7 @@ broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROT
 broadcastSocket.bind(('', PORT_TO_BIND))
 print("\n\nBroadcast Server started: listening to port " + str(PORT_TO_BIND) + "\n")
 
-while 1:
+while True:
     (rfd, wfd, efd) = select.select([broadcastSocket], [], [])
     if broadcastSocket in rfd:
         (message, address) = broadcastSocket.recvfrom(1024)

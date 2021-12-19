@@ -19,11 +19,13 @@ supported_commands: dict
 @app.route("/")
 def supported_commands_query():
     print("Service root accessed. Sending Back Commands config.")
-    try:
-        with open(CONFIG_FILENAME) as commands_config:
-            return commands_config.read() + "\n"
-    except IOError:
-        return "500 Internal Server Error\n"
+
+    import copy
+    commands_dict = copy.deepcopy(supported_commands)
+    for command in commands_dict:
+        commands_dict[command].pop(PARAM_SHELL_COMMAND)
+
+    return json.dumps(commands_dict, indent=4) + "\n"
 
 
 @app.route("/command/<command_name>")

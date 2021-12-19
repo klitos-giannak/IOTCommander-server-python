@@ -1,12 +1,25 @@
 {
-  "consolePrint": {
+  "testString": {
     "myText": "text",
     "shellCommand": "echo $myText"
   },
-  "testTypes": {
+  "testInt": {
+    "myInt": "int",
+    "shellCommand": "echo $myInt"
+  },
+  "testFloat": {
+    "myFloat": "float",
+    "shellCommand": "echo $myFloat"
+  },
+  "testBoolean": {
+    "myBoolean": "boolean",
+    "shellCommand": "echo $myBoolean"
+  },
+  "testAllTypes": {
     "myInt": "int",
     "myFloat": "float",
     "myText": "text",
-    "shellCommand": "echo $myText, $myFloat, $myInteger"
+    "myBoolean": "boolean",
+    "shellCommand": "echo $myText, $myFloat, $myInteger, $myBoolean"
   }
 }

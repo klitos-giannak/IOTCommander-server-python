@@ -16,7 +16,7 @@ app = Flask(__name__)
 supported_commands: dict
 
 
-@app.route("/")
+@app.route("/commands")
 def supported_commands_query():
     print("Service root accessed. Sending Back Commands config.")
 

@@ -90,14 +90,26 @@ def validate_config() -> bool:
         return False
 
 
+def print_commands_summary():
+    output = "\nSupported commands summary: ["
+    # noinspection PyUnboundLocalVariable
+    for command in supported_commands:
+        output = output + command + ", "
+    output = output[:-2]
+    output = output + "]"
+    print(output)
+
+
 if not validate_config():
     print("commands_config validation failed")
     sys.exit(1)
+else:
+    print_commands_summary()
 
 if __name__ == "__main__":
     from waitress import serve
 
-    print("\n-- Running commands server at port " + str(REST_API_PORT) + " --\n")
+    print("-- Running commands server at port " + str(REST_API_PORT) + " --\n")
     serve(app, host="0.0.0.0", port=REST_API_PORT)
 
     print("\n-- Commands server terminated --")

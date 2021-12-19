@@ -10,10 +10,22 @@ PARAM_SHELL_COMMAND = "shellCommand"
 PARAM_INTEGER = "int"
 PARAM_FLOAT = "float"
 PARAM_TEXT = "text"
-ACCEPTED_PARAMETER_TYPES = [PARAM_INTEGER, PARAM_FLOAT, PARAM_TEXT]
+PARAM_BOOLEAN = "boolean"
+ACCEPTED_PARAMETER_TYPES = [PARAM_INTEGER, PARAM_FLOAT, PARAM_BOOLEAN, PARAM_TEXT]
+ACCEPTED_BOOLEAN_TRUE_VALUES = ["true", "t", "1"]
+ACCEPTED_BOOLEAN_FALSE_VALUES = ["false", "f", "0"]
 
 app = Flask(__name__)
 supported_commands: dict
+
+
+def get_boolean_value(value: str):
+    if value.lower() in ACCEPTED_BOOLEAN_TRUE_VALUES:
+        return True
+    elif value.lower() in ACCEPTED_BOOLEAN_FALSE_VALUES:
+        return False
+    else:
+        return None
 
 
 @app.route("/commands")
@@ -55,6 +67,13 @@ def command_requested(command_name):
             elif expected_type == PARAM_FLOAT:
                 # we don't want to save the result, just validate the type
                 if float(value) is None:
+                    response = "400 Bad Request\nUnable to convert value of param "
+                    response = response + param + " to type " + expected_type + "\n"
+                    return response
+
+            elif expected_type == PARAM_BOOLEAN:
+                # we don't want to save the result, just validate the type
+                if get_boolean_value(value) is None:
                     response = "400 Bad Request\nUnable to convert value of param "
                     response = response + param + " to type " + expected_type + "\n"
                     return response

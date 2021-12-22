@@ -30,7 +30,7 @@ def get_boolean_value(value: str):
 
 @app.route("/commands")
 def supported_commands_query():
-    print("Service root accessed. Sending Back Commands config.")
+    print("Supported commands requested. Sending Back Commands config.")
 
     import copy
     commands_dict = copy.deepcopy(supported_commands)
@@ -42,6 +42,8 @@ def supported_commands_query():
 
 @app.route("/command/<command_name>")
 def command_requested(command_name):
+    print("Command <" + command_name + "> requested. Trying to parse parameters.")
+
     from flask import request
 
     command: dict = supported_commands[command_name]
@@ -55,34 +57,42 @@ def command_requested(command_name):
         try:
             value = request.args.get(param)
             if value is None:
-                return "400 Bad Request\nmissing param " + param + "\n"
+                reason = "missing param " + param
+                print(reason + ". Responding with an error.")
+                return "400 Bad Request\n" + reason + "\n"
 
             if expected_type == PARAM_INTEGER:
                 # we don't want to save the result, just validate the type
                 if int(value) is None:
-                    response = "400 Bad Request\nUnable to convert value of param "
-                    response = response + param + " to type " + expected_type + "\n"
+                    reason = "Unable to convert value of param " + param + " to type " + expected_type
+                    print(reason + ". Responding with an error.")
+                    response = "400 Bad Request\n" + reason + "\n"
                     return response
 
             elif expected_type == PARAM_FLOAT:
                 # we don't want to save the result, just validate the type
                 if float(value) is None:
-                    response = "400 Bad Request\nUnable to convert value of param "
-                    response = response + param + " to type " + expected_type + "\n"
+                    reason = "Unable to convert value of param " + param + " to type " + expected_type
+                    print(reason + ". Responding with an error.")
+                    response = "400 Bad Request\n" + reason + "\n"
                     return response
 
             elif expected_type == PARAM_BOOLEAN:
                 # we don't want to save the result, just validate the type
                 if get_boolean_value(value) is None:
-                    response = "400 Bad Request\nUnable to convert value of param "
-                    response = response + param + " to type " + expected_type + "\n"
+                    reason = "Unable to convert value of param " + param + " to type " + expected_type
+                    print(reason + ". Responding with an error.")
+                    response = "400 Bad Request\n" + reason + "\n"
                     return response
 
         except ValueError:
-            return "400 Bad Request\ninvalid param " + param + "\n"
+            reason = "Invalid param " + param
+            print(reason + ". Responding with an error.")
+            return "400 Bad Request\n" + reason + "\n"
 
         shell_command = shell_command.replace("$" + param, value, 1)
 
+    print("Parameters parsed successfully, responding OK")
     import subprocess
     subprocess.call(shell_command, shell=True)
     print()

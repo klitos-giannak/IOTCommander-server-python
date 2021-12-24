@@ -1,4 +1,5 @@
 import json
+import os
 
 from flask import Flask
 
@@ -100,7 +101,9 @@ def command_requested(command_name):
 
 def validate_config() -> bool:
     try:
-        with open(CONFIG_FILENAME) as json_file:
+        __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        file = os.path.join(__location__, CONFIG_FILENAME)
+        with open(file) as json_file:
             global supported_commands
             supported_commands = json.load(json_file)
             for command in supported_commands:

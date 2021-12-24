@@ -89,6 +89,8 @@ def start():
                     broadcast_socket.sendto(outgoing_message, address)
                     print("Out -> " + ip + ":" + port + " : " + discover_response)
 
+    print("\nBroadcast Server stopped\n")
+
 
 def stop():
     global should_continue

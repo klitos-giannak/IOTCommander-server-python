@@ -1,9 +1,9 @@
-import os
-import socket
-import select
 import fcntl
-import struct
 import json
+import os
+import select
+import socket
+import struct
 from json import JSONDecodeError
 
 """
@@ -17,6 +17,10 @@ with value the hostname of the running device, thus revealing the IP the device 
 """
 
 PORT_TO_BIND = 9977
+
+discover_response: str
+should_continue = True
+timeout = 2  # seconds
 
 
 def get_ip(if_name):
@@ -48,36 +52,49 @@ def parse_broadcast_message(to_parse: str):
         return None
 
 
-# Read the system's available network interfaces
-network_interfaces = os.listdir('/sys/class/net/')
-network_interfaces.remove('lo')
+def initialise():
+    # Read the system's available network interfaces
+    network_interfaces = os.listdir('/sys/class/net/')
+    network_interfaces.remove('lo')
 
-print('\nFound Network Interfaces:')
-[print(net_interface + ' ' + get_ip(net_interface)) for net_interface in network_interfaces]
+    print('\nFound Network Interfaces:')
+    [print(net_interface + ' ' + get_ip(net_interface)) for net_interface in network_interfaces]
 
-hostname = socket.gethostname()
-discoverResponse = '{"deviceName":"' + hostname + '"}'
+    hostname = socket.gethostname()
+    global discover_response
+    discover_response = '{"deviceName":"' + hostname + '"}'
 
-broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-broadcastSocket.bind(('', PORT_TO_BIND))
-print("\n\nBroadcast Server started: listening to port " + str(PORT_TO_BIND) + "\n")
+def start():
+    broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-while True:
-    (rfd, wfd, efd) = select.select([broadcastSocket], [], [])
-    if broadcastSocket in rfd:
-        (message, address) = broadcastSocket.recvfrom(1024)
-        decodedMessage = message.decode().rstrip('\n')
-        ip = str(address[0])
-        port = str(address[1])
-        print("In <-" + ip + ":" + port + " : " + decodedMessage)
+    broadcast_socket.bind(('', PORT_TO_BIND))
+    print("\n\nBroadcast Server started: listening to port " + str(PORT_TO_BIND) + "\n")
 
-        parsedMessage = parse_broadcast_message(decodedMessage)
+    while should_continue:
+        (rfd, wfd, efd) = select.select([broadcast_socket], [], [], timeout)
+        if broadcast_socket in rfd:
+            (message, address) = broadcast_socket.recvfrom(1024)
+            decoded_message = message.decode().rstrip('\n')
+            ip = str(address[0])
+            port = str(address[1])
+            print("In <-" + ip + ":" + port + " : " + decoded_message)
 
-        if parsedMessage is not None:
-            if parsedMessage['action'] == "discover":
-                print('action "discover" found. Responding...')
-                outgoingMessage = discoverResponse.encode()
-                broadcastSocket.sendto(outgoingMessage, address)
-                print("Out -> " + ip + ":" + port + " : " + discoverResponse)
+            parsed_message = parse_broadcast_message(decoded_message)
 
+            if parsed_message is not None:
+                if parsed_message['action'] == "discover":
+                    print('action "discover" found. Responding...')
+                    outgoing_message = discover_response.encode()
+                    broadcast_socket.sendto(outgoing_message, address)
+                    print("Out -> " + ip + ":" + port + " : " + discover_response)
+
+
+def stop():
+    global should_continue
+    should_continue = False
+
+
+if __name__ == "__main__":
+    initialise()
+    start()

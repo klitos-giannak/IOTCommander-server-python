@@ -1,5 +1,4 @@
 import json
-import sys
 
 from flask import Flask
 
@@ -131,16 +130,20 @@ def print_commands_summary():
     print(output)
 
 
-if not validate_config():
-    print("commands_config validation failed")
-    sys.exit(1)
-else:
-    print_commands_summary()
+def start():
+    if not validate_config():
+        print("commands_config validation failed")
+        return
+    else:
+        print_commands_summary()
 
-if __name__ == "__main__":
     from waitress import serve
 
     print("-- Running commands server at port " + str(REST_API_PORT) + " --\n")
     serve(app, host="0.0.0.0", port=REST_API_PORT)
 
     print("\n-- Commands server terminated --")
+
+
+if __name__ == "__main__":
+    start()

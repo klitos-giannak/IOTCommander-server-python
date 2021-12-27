@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "*"
-waitress = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.9"
+
+[packages.MicroWebSrv2]
+git = "https://github.com/infinite-tree/MicroWebSrv2.git"

@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Flask
+from MicroWebSrv2 import *
 
 REST_API_PORT = 9977
 CONFIG_FILENAME = 'commands_config.json'
@@ -14,8 +14,10 @@ PARAM_BOOLEAN = "boolean"
 ACCEPTED_PARAMETER_TYPES = [PARAM_INTEGER, PARAM_FLOAT, PARAM_BOOLEAN, PARAM_TEXT]
 ACCEPTED_BOOLEAN_TRUE_VALUES = ["true", "t", "1"]
 ACCEPTED_BOOLEAN_FALSE_VALUES = ["false", "f", "0"]
+COMMAND_RESPONSE_OK_BODY = "<html><body><h1>[200] OK</h1><p>Command successful</p></body></html>\n"
 
-app = Flask(__name__)
+should_continue = True
+
 supported_commands: dict
 
 
@@ -28,8 +30,8 @@ def get_boolean_value(value: str):
         return None
 
 
-@app.route("/commands")
-def supported_commands_query():
+@WebRoute(GET, '/commands')
+def supported_commands_query(server: MicroWebSrv2, request: HttpRequest):
     print("Supported commands requested. Sending Back Commands config.")
 
     import copy
@@ -37,16 +39,31 @@ def supported_commands_query():
     for command in commands_dict:
         commands_dict[command].pop(PARAM_SHELL_COMMAND)
 
-    return json.dumps(commands_dict, indent=4) + "\n"
+    body = json.dumps(commands_dict, indent=4) + "\n"
+    request.Response.ReturnOk(body)
+    return
 
 
-@app.route("/command/<command_name>")
-def command_requested(command_name):
+@WebRoute(GET, '/command/<command_name>')
+def command_requested(server: MicroWebSrv2, request: HttpRequest, args: dict):
+    command_name = args['command_name']
     print("Command <" + command_name + "> requested. Trying to parse parameters.")
 
-    from flask import request
+    if not isinstance(command_name, str):
+        request.Response.ReturnBadRequest()
+        return
 
-    command: dict = supported_commands[command_name]
+    command: dict = supported_commands.get(command_name)
+    if command is None:
+        # retry but case-insensitive
+        for key in supported_commands:
+            if key.lower() == command_name:
+                command: dict = supported_commands[key]
+                break
+
+    if command is None:
+        request.Response.ReturnNotFound()
+        return
     shell_command: str = command[PARAM_SHELL_COMMAND]
 
     for param in command:
@@ -55,40 +72,42 @@ def command_requested(command_name):
 
         expected_type = command[param]
         try:
-            value = request.args.get(param)
+            value = request.QueryParams.get(param)
             if value is None:
                 reason = "missing param " + param
                 print(reason + ". Responding with an error.")
-                return "400 Bad Request\n" + reason + "\n"
+                request.Response.ReturnBadRequest()
+                return
 
             if expected_type == PARAM_INTEGER:
                 # we don't want to save the result, just validate the type
                 if int(value) is None:
                     reason = "Unable to convert value of param " + param + " to type " + expected_type
                     print(reason + ". Responding with an error.")
-                    response = "400 Bad Request\n" + reason + "\n"
-                    return response
+                    request.Response.ReturnBadRequest()
+                    return
 
             elif expected_type == PARAM_FLOAT:
                 # we don't want to save the result, just validate the type
                 if float(value) is None:
                     reason = "Unable to convert value of param " + param + " to type " + expected_type
                     print(reason + ". Responding with an error.")
-                    response = "400 Bad Request\n" + reason + "\n"
-                    return response
+                    request.Response.ReturnBadRequest()
+                    return
 
             elif expected_type == PARAM_BOOLEAN:
                 # we don't want to save the result, just validate the type
                 if get_boolean_value(value) is None:
                     reason = "Unable to convert value of param " + param + " to type " + expected_type
                     print(reason + ". Responding with an error.")
-                    response = "400 Bad Request\n" + reason + "\n"
-                    return response
+                    request.Response.ReturnBadRequest()
+                    return
 
         except ValueError:
             reason = "Invalid param " + param
             print(reason + ". Responding with an error.")
-            return "400 Bad Request\n" + reason + "\n"
+            request.Response.ReturnBadRequest()
+            return
 
         shell_command = shell_command.replace("$" + param, value, 1)
 
@@ -96,7 +115,7 @@ def command_requested(command_name):
     import subprocess
     subprocess.call(shell_command, shell=True)
     print()
-    return "200 OK\n"
+    request.Response.ReturnOk(COMMAND_RESPONSE_OK_BODY)
 
 
 def validate_config() -> bool:
@@ -140,12 +159,20 @@ def start():
     else:
         print_commands_summary()
 
-    from waitress import serve
-
     print("-- Running commands server at port " + str(REST_API_PORT) + " --\n")
-    serve(app, host="0.0.0.0", port=REST_API_PORT)
 
+    web_server = MicroWebSrv2()
+    web_server.BindAddress = ('0.0.0.0', REST_API_PORT)
+    web_server.StartManaged()
+    while should_continue:
+        sleep(1)
+    web_server.Stop()
     print("\n-- Commands server terminated --")
+
+
+def stop():
+    global should_continue
+    should_continue = False
 
 
 if __name__ == "__main__":

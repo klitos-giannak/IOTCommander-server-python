@@ -15,5 +15,8 @@ while discover_thread.is_alive() and commands_thread.is_alive():
     discover_thread.join(timeout)
     commands_thread.join(timeout)
 
+commands_service.stop()
 discover_service.stop()
+
+commands_thread.join()  # wait for commands service to shut down
 discover_thread.join()  # wait for discover service to shut down

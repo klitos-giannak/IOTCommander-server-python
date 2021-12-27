@@ -99,4 +99,7 @@ def stop():
 
 if __name__ == "__main__":
     initialise()
-    start()
+    try:
+        start()
+    except KeyboardInterrupt:
+        print("Broadcast Server interrupted")

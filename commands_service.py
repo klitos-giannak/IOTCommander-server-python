@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 
@@ -17,6 +18,7 @@ ACCEPTED_BOOLEAN_FALSE_VALUES = ["false", "f", "0"]
 COMMAND_RESPONSE_OK_BODY = "<html><body><h1>[200] OK</h1><p>Command successful</p></body></html>\n"
 
 should_continue = True
+web_server: MicroWebSrv2
 
 supported_commands: dict
 
@@ -161,19 +163,25 @@ def start():
 
     print("-- Running commands server at port " + str(REST_API_PORT) + " --\n")
 
+    global web_server
     web_server = MicroWebSrv2()
     web_server.BindAddress = ('0.0.0.0', REST_API_PORT)
     web_server.StartManaged()
-    while should_continue:
-        sleep(1)
+
+
+def stop():
     web_server.Stop()
     print("\n-- Commands server terminated --")
 
 
-def stop():
-    global should_continue
-    should_continue = False
+async def start_blocking():
+    start()
+    while True:
+        await asyncio.sleep(1)
 
 
 if __name__ == "__main__":
-    start()
+    try:
+        asyncio.run(start_blocking())
+    except KeyboardInterrupt:
+        stop()

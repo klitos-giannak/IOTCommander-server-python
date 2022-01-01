@@ -1,6 +1,6 @@
-import asyncio
 import json
 import os
+import time
 
 from MicroWebSrv2 import *
 
@@ -18,12 +18,12 @@ ACCEPTED_BOOLEAN_FALSE_VALUES = ["false", "f", "0"]
 COMMAND_RESPONSE_OK_BODY = "<html><body><h1>[200] OK</h1><p>Command successful</p></body></html>\n"
 
 should_continue = True
-web_server: MicroWebSrv2
+web_server = MicroWebSrv2()
 
-supported_commands: dict
+supported_commands = {}
 
 
-def get_boolean_value(value: str):
+def get_boolean_value(value):
     if value.lower() in ACCEPTED_BOOLEAN_TRUE_VALUES:
         return True
     elif value.lower() in ACCEPTED_BOOLEAN_FALSE_VALUES:
@@ -33,7 +33,7 @@ def get_boolean_value(value: str):
 
 
 @WebRoute(GET, '/commands')
-def supported_commands_query(server: MicroWebSrv2, request: HttpRequest):
+def supported_commands_query(server, request):
     print("Supported commands requested. Sending Back Commands config.")
 
     import copy
@@ -47,7 +47,7 @@ def supported_commands_query(server: MicroWebSrv2, request: HttpRequest):
 
 
 @WebRoute(GET, '/command/<command_name>')
-def command_requested(server: MicroWebSrv2, request: HttpRequest, args: dict):
+def command_requested(server, request, args):
     command_name = args['command_name']
     print("Command <" + command_name + "> requested. Trying to parse parameters.")
 
@@ -55,18 +55,18 @@ def command_requested(server: MicroWebSrv2, request: HttpRequest, args: dict):
         request.Response.ReturnBadRequest()
         return
 
-    command: dict = supported_commands.get(command_name)
+    command = supported_commands.get(command_name)
     if command is None:
         # retry but case-insensitive
         for key in supported_commands:
             if key.lower() == command_name:
-                command: dict = supported_commands[key]
+                command = supported_commands[key]
                 break
 
     if command is None:
         request.Response.ReturnNotFound()
         return
-    shell_command: str = command[PARAM_SHELL_COMMAND]
+    shell_command = command[PARAM_SHELL_COMMAND]
 
     for param in command:
         if param == PARAM_SHELL_COMMAND:
@@ -128,7 +128,7 @@ def validate_config() -> bool:
             global supported_commands
             supported_commands = json.load(json_file)
             for command in supported_commands:
-                parameters: dict = supported_commands[command]
+                parameters = supported_commands[command]
                 shell_command = parameters.get(PARAM_SHELL_COMMAND)
                 if shell_command is None:
                     print('"' + PARAM_SHELL_COMMAND + '" not found for command "' + command + '"')
@@ -157,7 +157,7 @@ def print_commands_summary():
 def start():
     if not validate_config():
         print("commands_config validation failed")
-        return
+        return False
     else:
         print_commands_summary()
 
@@ -167,6 +167,7 @@ def start():
     web_server = MicroWebSrv2()
     web_server.BindAddress = ('0.0.0.0', REST_API_PORT)
     web_server.StartManaged()
+    return True
 
 
 def stop():
@@ -174,14 +175,10 @@ def stop():
     print("\n-- Commands server terminated --")
 
 
-async def start_blocking():
-    start()
-    while True:
-        await asyncio.sleep(1)
-
-
 if __name__ == "__main__":
     try:
-        asyncio.run(start_blocking())
+        if start():
+            while True:
+                time.sleep(60)
     except KeyboardInterrupt:
         stop()

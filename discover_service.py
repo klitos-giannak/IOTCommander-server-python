@@ -4,7 +4,6 @@ import os
 import select
 import socket
 import struct
-from json import JSONDecodeError
 
 """
 This script is meant to be run as a service. Its purpose is to make the device running it, discoverable by other devices
@@ -18,7 +17,7 @@ with value the hostname of the running device, thus revealing the IP the device 
 
 PORT_TO_BIND = 9977
 
-discover_response: str
+discover_response = ""
 should_continue = True
 timeout = 2  # seconds
 
@@ -42,13 +41,14 @@ def get_ip(if_name):
     return found_ip
 
 
-def parse_broadcast_message(to_parse: str):
+def parse_broadcast_message(to_parse):
     """Parse the given string as a json and return a dictionary with the json's contents"""
     try:
-        decoded: dict = json.loads(to_parse)
+        decoded = json.loads(to_parse)
         if decoded is not None:
             return decoded
-    except JSONDecodeError:
+    except ValueError:
+        # this is a JSONDecodeError, but we are catching superclass for backwards compatibility
         return None
 
 
@@ -58,7 +58,8 @@ def initialise():
     network_interfaces.remove('lo')
 
     print('\nFound Network Interfaces:')
-    [print(net_interface + ' ' + get_ip(net_interface)) for net_interface in network_interfaces]
+    for net_interface in network_interfaces:
+        print(net_interface + ' ' + get_ip(net_interface))
 
     hostname = socket.gethostname()
     global discover_response
@@ -76,7 +77,7 @@ def start():
         if broadcast_socket in rfd:
             (message, address) = broadcast_socket.recvfrom(1024)
             decoded_message = message.decode().rstrip('\n')
-            ip = str(address[0])
+            ip = address[0]
             port = str(address[1])
             print("In <-" + ip + ":" + port + " : " + decoded_message)
 

@@ -1,4 +1,4 @@
-## How to test discover_service script
+## How to test discover_service script with netcat
 
 #### You will need:
 1. a "server" device that is python 3 capable
@@ -10,12 +10,12 @@
 3. the broadcast address of your local network where both the "server" and the "client" are connected.
    > if your ip is something like 192.168.1.2 and your netmask is 255.255.255.0 then your broadcast address will be 192.168.1.255
    
-4. the port the discover_service is bound. If you havent altered this script, this will be 9977
+4. the port the discover_service is bound. If you haven't altered the script, this will be 9977
 
 
 #### Instructions
 1. Under a linux shell run `python3 discover_service.py` on your server device
-2. On your "client" computer with on terminal 1 run `nc -v -u -l -p 65000`
+2. On your "client" computer from terminal 1 run `nc -v -u -l -p 65000`
    > This is going to give verbose output ***-v*** while listening ***-l*** for responses in UDP protocol ***-u*** in localport ***-p*** 65000
    
 3. On your "client" computer, from terminal 2 run `nc -u -b -p 65000 192.168.1.255 9977`

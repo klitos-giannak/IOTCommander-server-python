@@ -72,9 +72,14 @@ def start():
     broadcast_socket.bind(('', PORT_TO_BIND))
     print("\n\nBroadcast Server started: listening to port " + str(PORT_TO_BIND) + "\n")
 
+    broadcast_socket.setblocking(0)
+    epoll = select.epoll()
+    epoll.register(broadcast_socket.fileno(), select.EPOLLIN)
     while should_continue:
-        (rfd, wfd, efd) = select.select([broadcast_socket], [], [], timeout)
-        if broadcast_socket in rfd:
+        events = epoll.poll(1)
+        if not events:
+            continue
+        if broadcast_socket.fileno() == events[0][0]:
             (message, address) = broadcast_socket.recvfrom(1024)
             decoded_message = message.decode().rstrip('\n')
             ip = address[0]
@@ -90,6 +95,9 @@ def start():
                     broadcast_socket.sendto(outgoing_message, address)
                     print("Out -> " + ip + ":" + port + " : " + discover_response)
 
+    epoll.unregister(broadcast_socket.fileno())
+    epoll.close()
+    broadcast_socket.close()
     print("\nBroadcast Server stopped\n")
 
 

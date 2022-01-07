@@ -19,9 +19,23 @@ network using any means(wi-fi, ethernet, etc.). You can use this in devices like
 capable of running python and connecting to a network (e.g. OrangePi, NanoPi, Onion Omega, etc.). I haven't tested with
 micropython in microcontrollers like ESP32 yet, but if you do, please let me know how it goes.
 
-[How to test discover_service.py](docs/DISCOVER_SERVICE.md)
+## Installation instructions
+1. clone the repository or download as zip and extract
+2. cd inside the root directory (IOTCommander-server-python if you haven't changed it)
+3. Run `pipenv install` to install needed dependencies
+4. Run with `python3 iot_commander.py`
 
-[How to test commands_service.py](docs/COMMANDS_SERVICE.md)
+*3 alternative, if you don't have/want to run pipenv, download [MicroWebSrv2](https://github.com/infinite-tree/MicroWebSrv2.git)
+and copy the "MicroWebSrv2" directory to the root directory of this project
+
+## Testing
+The easiest way to test would be to download the client on your Android device from
+[Google Play](https://play.google.com/store/apps/details?id=mobi.duckseason.iotcommander). Then make sure your Android
+device is in the same network as the server device and use the app
+
+If you want to test manually, here are some guidelines for a linux shell
+- [How to test discover_service.py](docs/DISCOVER_SERVICE.md)
+- [How to test commands_service.py](docs/COMMANDS_SERVICE.md)
 
 NOTES:
 

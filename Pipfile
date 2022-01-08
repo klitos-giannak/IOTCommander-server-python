@@ -9,6 +9,3 @@ name = "pypi"
 
 [requires]
 python_version = "3.9"
-
-[packages.MicroWebSrv2]
-git = "https://github.com/infinite-tree/MicroWebSrv2.git"

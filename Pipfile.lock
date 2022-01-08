@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a9af4be4bb66ee9b61326b04a480e67c9ce8a867cf6c7b59156d00a4cf646b22"
+            "sha256": "b20aaa9718024ec28b53570df5a504bc1765bb9490e31099da47c34bd616c357"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -15,10 +15,6 @@
             }
         ]
     },
-    "default": {
-        "microwebsrv2": {
-            "git": "https://github.com/infinite-tree/MicroWebSrv2.git"
-        }
-    },
+    "default": {},
     "develop": {}
 }

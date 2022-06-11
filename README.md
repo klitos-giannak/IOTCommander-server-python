@@ -16,8 +16,9 @@ parameters(text, int, float, boolean) and a mapping to an actual command running
 
 This is the python implementation of the server. You can use this in any IOT device capable of connecting to your local
 network using any means(wi-fi, ethernet, etc.). You can use this in devices like raspberry-pi, or any other device
-capable of running python and connecting to a network (e.g. OrangePi, NanoPi, Onion Omega, etc.). I haven't tested with
-micropython in microcontrollers like ESP32 yet, but if you do, please let me know how it goes.
+capable of running python and connecting to a network (e.g. OrangePi, NanoPi, Onion Omega, etc.). For microcontrollers
+capable of running micropython (like ESP32) please check the micropython equivalent
+[IOTCommander-server-esp32-micropython](https://github.com/klitos-giannak/IOTCommander-server-esp32-micropython).
 
 ## Installation instructions
 1. clone the repository or download as zip and extract
